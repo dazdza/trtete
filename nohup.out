@@ -1,0 +1,10 @@
+The httpx command line client could not run because the required dependencies were not installed.
+Make sure you've installed everything with: pip install 'httpx[cli]'
+The httpx command line client could not run because the required dependencies were not installed.
+Make sure you've installed everything with: pip install 'httpx[cli]'
+Usage: httpx [OPTIONS] URL
+
+Error: No such option: -s
+Usage: httpx [OPTIONS] URL
+
+Error: No such option: -s
